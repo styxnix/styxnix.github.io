@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hiilihydraattilaskuri</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 1em;
+      background: #f9f9f9;
+    }
+
+    h1 {
+      font-size: 1.5em;
+      text-align: center;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 600px;
+      border-collapse: collapse;
+      margin-top: 1em;
+      background: white;
+    }
+
+    th, td {
+      padding: 0.5em;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    .total {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-top: 1em;
+      text-align: right;
+    }
+
+    #add-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+      margin-top: 1.5em;
+    }
+
+    #add-form input, #add-form button {
+      padding: 0.6em;
+      font-size: 1em;
+    }
+
+    @media (min-width: 600px) {
+      #add-form {
+        flex-direction: row;
+        align-items: center;
+      }
+
+      #add-form input {
+        flex: 1;
+      }
+
+      #add-form button {
+        flex-shrink: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Hiilihydraattilaskuri</h1>
+
+  <div class="table-wrapper">
+    <table id="carb-table">
+      <thead>
+        <tr>
+          <th>Ruoka</th>
+          <th>HH/100g</th>
+          <th>Määrä (g)</th>
+          <th>HH yhteensä</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <!-- Rivit lisätään tähän -->
+      </tbody>
+    </table>
+  </div>
+
+  <div class="total" id="total-carbs">Yhteensä: 0 g HH</div>
+
+  <h2>Lisää ruoka</h2>
+  <div id="add-form">
+    <input type="text" id="name" placeholder="Ruoka">
+    <input type="number" id="carbs" placeholder="HH/100g" step="0.1" min="0">
+    <input type="number" id="amount" placeholder="Määrä (g)" step="1" min="0">
+    <button onclick="addRowFromForm()">Lisää rivi</button>
+  </div>
+
+  <script>
+    function addRowFromForm() {
+      const name = document.getElementById('name').value.trim();
+      const carbs = parseFloat(document.getElementById('carbs').value);
+      const amount = parseFloat(document.getElementById('amount').value);
+
+      if (!name || isNaN(carbs) || isNaN(amount)) {
+        alert("Täytä kaikki kentät oikein.");
+        return;
+      }
+
+      const tbody = document.getElementById('table-body');
+      const row = document.createElement('tr');
+      const carbTotal = ((carbs / 100) * amount).toFixed(1);
+
+      row.innerHTML = `
+        <td>${name}</td>
+        <td>${carbs}</td>
+        <td>${amount}</td>
+        <td class="carb-total">${carbTotal}</td>
+        <td><button onclick="removeRow(this)">Poista</button></td>
+      `;
+
+      tbody.appendChild(row);
+      updateTotals();
+
+      // Tyhjennä kentät
+      document.getElementById('name').value = "";
+      document.getElementById('carbs').value = "";
+      document.getElementById('amount').value = "";
+    }
+
+    function updateTotals() {
+      let total = 0;
+      const rows = document.querySelectorAll('#table-body tr');
+
+      rows.forEach(row => {
+        const carb = parseFloat(row.querySelector('.carb-total').textContent) || 0;
+        total += carb;
+      });
+
+      document.getElementById('total-carbs').textContent = `Yhteensä: ${total.toFixed(1)} g HH`;
+    }
+
+    function removeRow(button) {
+      const row = button.closest('tr');
+      row.remove();
+      updateTotals();
+    }
+  </script>
+</body>
+</html>
